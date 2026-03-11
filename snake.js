@@ -164,3 +164,10 @@ addEventListener("keydown", (event) => {
     direction = "left"
   }
 })
+
+document.querySelector(".up").onclick = () => direction = "up";
+document.querySelector(".down").onclick = () => direction = "down";
+document.querySelector(".left").onclick = () => direction = "left";
+document.querySelector(".right").onclick = () => direction = "right";
+
+
