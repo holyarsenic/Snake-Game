@@ -180,7 +180,14 @@ section .infos {
 
 @media (max-width: 700px) {
   .game-controller {
+    margin-bottom: 30px;
     height: 120px;
     width: 120px;
   }
+
+  .game-controller .controller {
+    height: 40px;
+    width: 40px;
+  }
 }
+
