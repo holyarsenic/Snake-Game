@@ -1,186 +1,173 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+const board = document.querySelector('.board');
+const startButton = document.querySelector('.btn-start');
+const modal = document.querySelector(".modal");
+const startGameModal = document.querySelector(".start-game");
+const gameOverModal = document.querySelector(".game-over");
+const restartButton = document.querySelector(".btn-restart");
 
-html,
-body {
-  height: 100%;
-  width: 100%;
-}
-
-:root {
-
-  /*Background Colors*/
-  --bg-primary-color: #0c0c0c;
-  --bg-fill-color: #ad0ea8;
+const highScoreElement = document.querySelector("#high-score")
+const scoreElement = document.querySelector("#score")
+const timeElement = document.querySelector("#time")
 
 
-  /*Text Colors*/
-  --text-primary-color: #f0f0f0;
+const blockHeight = 50
+const blockWidth = 50
 
-  /*Spacing*/
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 40px;
-  --space-3xl: 48px;
+let highScore = localStorage.getItem("highScore") || 0
+let score = 0
+let time = `00-00`
+highScoreElement.innerText = highScore
 
-  /*Border colors*/
-  --border-primary-color: #333333;
+const cols = Math.floor(board.clientWidth / blockWidth);
+const rows = Math.floor(board.clientHeight / blockHeight);
 
-  /*Border radius*/
-  --border-radius-xs: 4px;
-  --border-radius-sm: 8px;
-  --border-radius-md: 12px;
-  --border-radius-lg: 16px;
-  --border-radius-xl: 20px;
-  --border-radius-2xl: 24px;
+let intervalId = null;
+let timerIntervalId = null;
 
-  /*Font Sizes */
+let food = {
+  x: Math.floor(Math.random() * rows), y: Math.floor(Math.random() * cols)
+};
 
-}
+const blocks = [];
+let snake = [{
+  x: 1, y: 3
+}]
 
-html {
-  background-color: var(--bg-primary-color);
-  color: var(--text-primary-color);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-}
+let direction = 'right';
 
-main,
-section {
-  width: 100%;
-  height: 100%;
-}
-
-section {
-  padding: var(--space-2xl);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  height: 100%;
-  gap: var(--space-lg);
-}
-
-section .infos {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-}
-
-.info {
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--border-primary-color);
-  border-radius: var(--border-radius-sm);
-}
-
-.board {
-  border: 1px solid var(--border-primary-color);
-  flex-grow: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-  grid-template-rows: repeat(auto-fill, minmax(50px, 1fr));
-}
-
-.block {
-  border: 1px solid var(--border-primary-color);
-  border-radius: 40%;
-}
-
-.fill {
-  background-color: var(--bg-fill-color);
-}
-
-.food {
-  background-color: red;
-}
-
-.modal {
-  height: 100vh;
-  width: 100vw;
-  position: fixed;
-  top: 0;
-  background-color: #35353587;
-  display: flex;
-  backdrop-filter: blur(4px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal .start-game,
-.modal .game-over {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-lg);
-}
-
-.btn {
-  padding: var(--space-sm) var(--space-md);
-  border: none;
-  border-radius: var(--space-sm);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn:hover {
-  transform: scale(1.3);
-}
-
-.modal .game-over {
-  display: none;
-}
-
-.game-controller {
-  position: relative;
-  height: 150px;
-  width: 150px;
-}
-
-.up {
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.down {
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.left {
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.right {
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.game-controller .controller {
-  display: flex;
-  color: black;
-  background-color: white;
-  height: 50px;
-  width: 50px;
-  position: absolute;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-@media (max-width: 700px) {
-  .game-controller {
-    height: 120px;
-    width: 120px;
+for (let row = 0; row < rows; row++) {
+  for (let col = 0; col < cols; col++) {
+    const block = document.createElement('div');
+    block.classList.add("block")
+    board.appendChild(block);
+    blocks[`${row}-${col}`] = block
   }
 }
+
+function render() {
+
+  let head = null
+
+  blocks[`${food.x}-${food.y}`].classList.add("food")
+
+  if (direction === "left") {
+    head = { x: snake[0].x, y: snake[0].y - 1 }
+  }
+  else if (direction === "right") {
+    head = { x: snake[0].x, y: snake[0].y + 1 }
+  }
+  else if (direction === "down") {
+    head = { x: snake[0].x + 1, y: snake[0].y }
+  }
+  else if (direction === "up") {
+    head = { x: snake[0].x - 1, y: snake[0].y }
+  }
+
+  //wall colision logic
+  if (head.x < 0 || head.x >= rows || head.y < 0 || head.y >= cols) {
+    clearInterval(intervalId)
+
+    modal.style.display = "flex";
+    startGameModal.style.display = "none";
+    gameOverModal.style.display = "flex";
+
+    return;
+  }
+
+  //food consume logic
+  if (head.x == food.x && head.y == food.y) {
+    blocks[`${food.x}-${food.y}`].classList.remove("food")
+    food = { x: Math.floor(Math.random() * rows), y: Math.floor(Math.random() * cols) }
+    blocks[`${food.x}-${food.y}`].classList.add("food")
+
+    snake.unshift(head)
+
+    score += 10
+    scoreElement.innerText = score
+
+    if (score > highScore) {
+      highScore = score
+      localStorage.setItem("highScore", highScore.toString())
+    }
+  }
+
+  snake.forEach(segment => {
+    blocks[`${segment.x}-${segment.y}`].classList.remove("fill")
+  })
+  snake.unshift(head)
+  snake.pop()
+
+
+  snake.forEach(segment => {
+    blocks[`${segment.x}-${segment.y}`].classList.add("fill")
+  })
+}
+
+
+startButton.addEventListener("click", () => {
+  modal.style.display = "none"
+  intervalId = setInterval(() => {
+    render()
+  }, 300)
+
+  timerIntervalId = setInterval(() => {
+    let [min, sec] = time.split("-").map(Number)
+
+    if (sec == 59) {
+      min += 1
+      sec = 0
+    }
+    else {
+      sec += 1
+    }
+    time = `${min}-${sec}`
+    timeElement.innerText = time
+  }, 1000)
+})
+
+restartButton.addEventListener("click", restartGame)
+
+function restartGame() {
+
+  blocks[`${food.x}-${food.y}`].classList.remove("food")
+  snake.forEach(segment => {
+    blocks[`${segment.x}-${segment.y}`].classList.remove("fill")
+  })
+
+  score = 0
+  time = `00-00`
+
+  scoreElement.innerText = score
+  timeElement.innerText = time
+  highScoreElement.innerText = highScore
+
+  modal.style.display = "none"
+  direction = "down"
+  snake = [{ x: 1, y: 3 }]
+  food = { x: Math.floor(Math.random() * rows), y: Math.floor(Math.random() * cols) }
+  intervalId = setInterval(() => { render() }, 300)
+}
+
+
+
+addEventListener("keydown", (event) => {
+  if (event.key === "ArrowUp") {
+    direction = "up"
+  }
+  else if (event.key === "ArrowDown") {
+    direction = "down"
+  }
+  else if (event.key === "ArrowRight") {
+    direction = "right"
+  }
+  else if (event.key === "ArrowLeft") {
+    direction = "left"
+  }
+})
+
+document.querySelector(".up").onclick = () => direction = "up";
+document.querySelector(".down").onclick = () => direction = "down";
+document.querySelector(".left").onclick = () => direction = "left";
+document.querySelector(".right").onclick = () => direction = "right";
+
+
