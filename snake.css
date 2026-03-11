@@ -134,3 +134,53 @@ section .infos {
 .modal .game-over {
   display: none;
 }
+
+.game-controller {
+  position: relative;
+  height: 150px;
+  width: 150px;
+}
+
+.up {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.down {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.left {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.right {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.game-controller .controller {
+  display: flex;
+  color: black;
+  background-color: white;
+  height: 50px;
+  width: 50px;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .game-controller {
+    height: 120px;
+    width: 120px;
+  }
+}
